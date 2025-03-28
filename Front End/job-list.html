@@ -57,7 +57,7 @@
                         <td>${job.status}</td>
                         <td>${new Date(job.date).toLocaleString()}</td>
                         <td><a href="job-details.html?id=${job.id}">View</a></td>
-                        <td><button onclick="openReminderModal('${job.id}', '${new Date(job.date).toLocaleString()}')">Set Reminder</button></td>
+                        <td><button onclick="openReminderModal('${job.id}', '${job.company}', '${job.title}', '${new Date(job.date).toLocaleString()}')">Set Reminder</button></td>
                     `;
                     jobTable.appendChild(row);
                 });
@@ -67,9 +67,12 @@
             }
         });
 
-        function openReminderModal(jobId, jobDate) {
+        function openReminderModal(jobId, company, title, jobDate) {
             document.getElementById('reminderModal').style.display = 'block';
             document.getElementById('reminderForm').dataset.jobId = jobId;
+            document.getElementById('reminderForm').dataset.company = company;
+            document.getElementById('reminderForm').dataset.title = title;
+            document.getElementById('reminderForm').dataset.jobDate = jobDate;
             document.getElementById('reminderDate').value = jobDate.replace(' ', 'T');
         }
 
@@ -78,13 +81,21 @@
 
             const token = localStorage.getItem('token');
             const jobId = event.target.dataset.jobId;
+            const company = event.target.dataset.company;
+            const title = event.target.dataset.title;
+            const jobDate = event.target.dataset.jobDate;
             const date = document.getElementById('reminderDate').value;
-            const message = document.getElementById('reminderMessage').value;
+            const message = `Reminder for job application:
+- Company: ${company}
+- Job Title: ${title}
+- Application Date: ${jobDate}
+- Job ID: ${jobId}
+- Custom Message: ${document.getElementById('reminderMessage').value}`;
 
             try {
                 await axios.post('http://localhost:3000/reminder/set-reminder', {
                     date,
-                    message: `${message} (Job ID: ${jobId})`
+                    message
                 }, {
                     headers: {
                         Authorization: token
