@@ -1,4 +1,5 @@
-<html lang="en"></html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -6,7 +7,7 @@
 </head>
 <body>
     <h2>Add Job Application</h2>
-    <form action="/add-job" method="POST">
+    <form id="addJobForm">
         <input type="text" name="company" placeholder="Company Name" required><br>
         <input type="text" name="title" placeholder="Job Title" required><br>
         <input type="date" name="date" required><br>
@@ -14,5 +15,33 @@
         <button type="submit">Save Job</button>
     </form>
     <button onclick="location.href='dashboard.html'">Back to Dashboard</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <script>
+        document.getElementById('addJobForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const company = event.target.company.value;
+            const title = event.target.title.value;
+            const date = event.target.date.value;
+            const notes = event.target.notes.value;
+
+            try {
+                const response = await axios.post('http://localhost:3000/job/add-job', {
+                    company,
+                    title,
+                    date,
+                    notes
+                });
+
+                alert('Job added successfully!');
+                // Optionally, you can redirect the user or perform other actions here
+            } catch (err) {
+                console.error(err);
+                alert('Failed to add job. Please try again.');
+            }
+        });
+    </script>
 </body>
 </html>

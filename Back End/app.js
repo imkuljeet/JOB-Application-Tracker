@@ -5,6 +5,7 @@ const sequelize = require('./util/database');
 const User = require("./models/users");
 
 const userRoutes = require("./routes/user");
+const addjobRoutes = require('./routes/addjob');
 
 const app = express();
 const port = 3000;
@@ -16,6 +17,7 @@ app.use(cors()); // Enable CORS
 
 // Register route
 app.use('/user',userRoutes);
+app.use('/job',addjobRoutes);
 
 // Start the server
 app.listen(port, () => {
