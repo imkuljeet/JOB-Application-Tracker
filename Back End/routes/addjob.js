@@ -19,4 +19,57 @@ router.get('/applications', Authorization, async (req, res) => {
     }
 });
 
+// Fetch job details
+router.get('/:id', Authorization, async (req, res) => {
+    try {
+        const job = await Job.findOne({ where: { id: req.params.id, userId: req.user.id } });
+        if (!job) {
+            return res.status(404).json({ message: 'Job not found' });
+        }
+        res.status(200).json({ job });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Failed to fetch job details. Please try again.' });
+    }
+});
+
+// Delete job
+router.delete('/:id', Authorization, async (req, res) => {
+    try {
+        const result = await Job.destroy({ where: { id: req.params.id, userId: req.user.id } });
+        if (result === 0) {
+            return res.status(404).json({ message: 'Job not found' });
+        }
+        res.status(200).json({ message: 'Job deleted successfully' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Failed to delete job. Please try again.' });
+    }
+});
+
+// Update job
+router.put('/:id', Authorization, async (req, res) => {
+    const { company, title, date, notes, status } = req.body;
+
+    try {
+        const job = await Job.findOne({ where: { id: req.params.id, userId: req.user.id } });
+        if (!job) {
+            return res.status(404).json({ message: 'Job not found' });
+        }
+
+        job.company = company;
+        job.title = title;
+        job.date = date;
+        job.notes = notes;
+        job.status = status;
+
+        await job.save();
+
+        res.status(200).json({ message: 'Job updated successfully', job });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Failed to update job. Please try again.' });
+    }
+});
+
 module.exports = router;

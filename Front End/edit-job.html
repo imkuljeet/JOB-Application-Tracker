@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Job</title>
+</head>
+<body>
+    <h2>Edit Job Application</h2>
+    <form id="editJobForm">
+        <input type="text" id="company" name="company" placeholder="Company Name" required><br>
+        <input type="text" id="title" name="title" placeholder="Job Title" required><br>
+        <input type="date" id="date" name="date" required><br>
+        <textarea id="notes" name="notes" placeholder="Notes"></textarea><br>
+        <select id="status" name="status" required>
+            <option value="Applied">Applied</option>
+            <option value="Interviewed">Interviewed</option>
+            <option value="Offered">Offered</option>
+            <option value="Rejected">Rejected</option>
+        </select><br>
+        <button type="submit">Save Changes</button>
+    </form>
+    <button onclick="location.href='job-list.html'">Back to Job List</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const params = new URLSearchParams(window.location.search);
+            const jobId = params.get('id');
+            const token = localStorage.getItem('token');
+
+            try {
+                const response = await axios.get(`http://localhost:3000/job/${jobId}`, {
+                    headers: {
+                        Authorization: token
+                    }
+                });
+
+                const job = response.data.job;
+                document.getElementById('company').value = job.company;
+                document.getElementById('title').value = job.title;
+                document.getElementById('date').value = job.date.slice(0, 10); // Format the date
+                document.getElementById('notes').value = job.notes;
+                document.getElementById('status').value = job.status;
+            } catch (err) {
+                console.error(err);
+                alert('Failed to fetch job details. Please try again.');
+            }
+        });
+
+        document.getElementById('editJobForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const params = new URLSearchParams(window.location.search);
+            const jobId = params.get('id');
+            const token = localStorage.getItem('token');
+
+            const company = document.getElementById('company').value;
+            const title = document.getElementById('title').value;
+            const date = document.getElementById('date').value;
+            const notes = document.getElementById('notes').value;
+            const status = document.getElementById('status').value;
+
+            try {
+                const response = await axios.put(`http://localhost:3000/job/${jobId}`, {
+                    company,
+                    title,
+                    date,
+                    notes,
+                    status
+                }, {
+                    headers: {
+                        Authorization: token
+                    }
+                });
+
+                alert('Job updated successfully!');
+                window.location.href = 'job-list.html';
+            } catch (err) {
+                console.error(err);
+                alert('Failed to update job. Please try again.');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -7,12 +7,58 @@
 </head>
 <body>
     <h2>Job Application Details</h2>
-    <p>Company: Google</p>
-    <p>Job Title: Software Engineer</p>
-    <p>Status: Applied</p>
-    <p>Application Date: 2025-02-12</p>
+    <p id="company">Company: </p>
+    <p id="title">Job Title: </p>
+    <p id="status">Status: </p>
+    <p id="date">Application Date: </p>
 
-    <button onclick="alert('Edit functionality goes here')">Edit</button>
-    <button onclick="alert('Delete functionality goes here')">Delete</button>
+    <button id="editBtn">Edit</button>
+    <button id="deleteBtn">Delete</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const params = new URLSearchParams(window.location.search);
+            const jobId = params.get('id');
+            const token = localStorage.getItem('token');
+
+            try {
+                const response = await axios.get(`http://localhost:3000/job/${jobId}`, {
+                    headers: {
+                        Authorization: token
+                    }
+                });
+
+                const job = response.data.job;
+                document.getElementById('company').textContent = `Company: ${job.company}`;
+                document.getElementById('title').textContent = `Job Title: ${job.title}`;
+                document.getElementById('status').textContent = `Status: ${job.status}`;
+                document.getElementById('date').textContent = `Application Date: ${job.date}`;
+
+                document.getElementById('editBtn').addEventListener('click', () => {
+                    window.location.href = `edit-job.html?id=${job.id}`;
+                });
+
+                document.getElementById('deleteBtn').addEventListener('click', async () => {
+                    try {
+                        await axios.delete(`http://localhost:3000/job/${jobId}`, {
+                            headers: {
+                                Authorization: token
+                            }
+                        });
+                        alert('Job deleted successfully!');
+                        window.location.href = 'job-list.html';
+                    } catch (err) {
+                        console.error(err);
+                        alert('Failed to delete job. Please try again.');
+                    }
+                });
+            } catch (err) {
+                console.error(err);
+                alert('Failed to fetch job details. Please try again.');
+            }
+        });
+    </script>
 </body>
 </html>
