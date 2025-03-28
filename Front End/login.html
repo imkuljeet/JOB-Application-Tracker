@@ -34,6 +34,10 @@
                 });
 
                 alert('Login successful!');
+
+                localStorage.setItem("token",response.data.token);
+
+                window.location.href = "dashboard.html"
                 // Optionally, you can redirect the user or perform other actions here
             } catch (err) {
                 console.error(err);
