@@ -8,7 +8,7 @@
 <body>
     <h2>Job Application Tracker</h2>
     <p id="welcomeMessage"></p>
-    <p id="careerGoals"></p>
+    <p id="careerGoalsMessage" style="display: none;"></p>
     
     <h3>Dashboard Overview</h3>
     <ul>
@@ -18,7 +18,7 @@
         <li><a href="profile.html">Edit Profile</a></li>
     </ul>
 
-    <button onclick="location.href = 'index.html'">Logout</button>
+    <button onclick="logout()">Logout</button>
 
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
@@ -27,26 +27,31 @@
         function logout() {
             alert('Logout functionality goes here!');
             localStorage.removeItem('token'); // Remove the token from local storage
+            location.href = 'index.html'; // Redirect to login page
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
             const token = localStorage.getItem('token');
 
             if (token) {
+                const decodedToken = jwt_decode(token);
+                const userName = decodedToken.name;
+
+                const welcomeMessage = document.getElementById('welcomeMessage');
+                welcomeMessage.textContent = `Welcome, ${userName}`;
+
+                // Fetch user profile to get career goals
                 try {
                     const response = await axios.get('http://localhost:3000/user/profile', {
                         headers: { Authorization: token }
                     });
 
                     const user = response.data.user;
-                    const userName = user.name;
-                    const userCareerGoals = user.careerGoals;
-
-                    const welcomeMessage = document.getElementById('welcomeMessage');
-                    welcomeMessage.textContent = `Welcome, ${userName}`;
-
-                    const careerGoalsElement = document.getElementById('careerGoals');
-                    careerGoalsElement.textContent = `Career Goals: ${userCareerGoals}`;
+                    if (user.careerGoals) {
+                        const careerGoalsMessage = document.getElementById('careerGoalsMessage');
+                        careerGoalsMessage.textContent = `Career Goals: ${user.careerGoals}`;
+                        careerGoalsMessage.style.display = 'block';
+                    }
                 } catch (err) {
                     console.error(err);
                     alert('Failed to fetch profile data. Please try again.');
