@@ -23,7 +23,12 @@ const Job = sequelize.define('Job', {
     notes: {
         type: DataTypes.TEXT,
         allowNull: true
-    }
+    },
+    status: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        defaultValue: 'Applied'
+    },
 });
 
 module.exports = Job;

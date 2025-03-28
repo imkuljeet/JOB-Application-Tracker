@@ -17,17 +17,41 @@
             </tr>
         </thead>
         <tbody id="jobTable">
-            <tr>
-                <td>Google</td>
-                <td>Software Engineer</td>
-                <td>Applied</td>
-                <td><a href="job-details.html">View</a></td>
-            </tr>
+            <!-- Job applications will be inserted here dynamically -->
         </tbody>
     </table>
 
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
     <script>
-        alert('Fetch job applications from backend and display them here.');
+        document.addEventListener('DOMContentLoaded', async () => {
+            const token = localStorage.getItem('token');
+
+            try {
+                const response = await axios.get('http://localhost:3000/job/applications', {
+                    headers: {
+                        Authorization: token
+                    }
+                });
+
+                const jobs = response.data.jobs;
+                const jobTable = document.getElementById('jobTable');
+
+                jobs.forEach(job => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${job.company}</td>
+                        <td>${job.title}</td>
+                        <td>${job.status}</td>
+                        <td><a href="job-details.html?id=${job.id}">View</a></td>
+                    `;
+                    jobTable.appendChild(row);
+                });
+            } catch (err) {
+                console.error(err);
+                alert('Failed to fetch job applications. Please try again.');
+            }
+        });
     </script>
 </body>
 </html>
