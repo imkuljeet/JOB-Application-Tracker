@@ -22,6 +22,8 @@
         document.getElementById('addJobForm').addEventListener('submit', async function(event) {
             event.preventDefault();
 
+            const token = localStorage.getItem('token');
+
             const company = event.target.company.value;
             const title = event.target.title.value;
             const date = event.target.date.value;
@@ -33,6 +35,10 @@
                     title,
                     date,
                     notes
+                }, {
+                    headers: {
+                        Authorization: token
+                    }
                 });
 
                 alert('Job added successfully!');

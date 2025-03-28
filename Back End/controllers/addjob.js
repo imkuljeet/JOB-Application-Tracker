@@ -1,14 +1,15 @@
 const Job = require('../models/jobs');
 
-const addjob = async (req, res, next) => {
+const addjob = async (req, res) => {
     const { company, title, date, notes } = req.body;
 
     try {
         const newJob = await Job.create({
-            company: company,
-            title: title,
-            date: date,
-            notes: notes
+            company,
+            title,
+            date,
+            notes,
+            userId: req.user.id // Assumes you have a userId field in your Job model
         });
 
         res.status(201).json({ message: 'Job added successfully!', job: newJob });
