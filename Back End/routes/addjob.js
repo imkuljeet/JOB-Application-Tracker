@@ -4,6 +4,23 @@ const router = express.Router();
 const addjobController = require('../controllers/addjob');
 const Authorization = require('../middleware/auth');
 
+router.get('/filter', Authorization, async (req, res) => {
+    const { status } = req.query; // Query parameter for filtering
+    // console.log("STATUS>>>>",status);
+    try {
+        const jobs = await Job.findAll({
+            where: {
+                status,
+                userId: req.user.id
+            }
+        });
+        res.status(200).json({ jobs });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Failed to filter jobs. Please try again.' });
+    }
+});
+
 router.use('/add-job', Authorization, addjobController.addjob);
 // Add this route in your addjob controller or routes file
 
@@ -71,5 +88,28 @@ router.put('/:id', Authorization, async (req, res) => {
         res.status(500).json({ message: 'Failed to update job. Please try again.' });
     }
 });
+
+// routes/addjob.js
+router.get('/search', Authorization, async (req, res) => {
+    const { query } = req.query; // Query parameter for search
+    try {
+        const jobs = await Job.findAll({
+            where: {
+                [Op.or]: [
+                    { title: { [Op.like]: `%${query}%` } },
+                    { company: { [Op.like]: `%${query}%` } }
+                ],
+                userId: req.user.id
+            }
+        });
+        res.status(200).json({ jobs });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Failed to search jobs. Please try again.' });
+    }
+});
+
+
+
 
 module.exports = router;

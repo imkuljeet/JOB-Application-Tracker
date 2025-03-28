@@ -7,6 +7,8 @@ const Reminder = require("./models/reminder");
 const Job = require("./models/jobs");
 const Company = require("./models/company");
 
+// let Authorization = require("./middleware/auth");
+
 require('dotenv').config();
 
 const userRoutes = require("./routes/user");

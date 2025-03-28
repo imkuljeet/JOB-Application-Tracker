@@ -30,49 +30,31 @@
             color: #333;
         }
 
-        /* Modal Styles */
-        #reminderModal {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            padding: 20px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            text-align: center;
+        #searchContainer {
+            margin-bottom: 20px;
         }
 
-        .close-btn {
-            position: absolute;
-            top: 5px;
-            right: 10px;
-            font-size: 18px;
-            cursor: pointer;
-            border: none;
-            background: none;
-        }
-
-        #modalOverlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 999;
-        }
-
-        .success-message {
-            color: green;
-            font-weight: bold;
+        input, select, button {
+            padding: 10px;
+            margin-right: 10px;
         }
     </style>
 </head>
 <body>
     <h2>Job Applications</h2>
+
+    <div id="searchContainer">
+        <input type="text" id="searchInput" placeholder="Search by company or job title">
+        <select id="filterDropdown">
+            <option value="">Filter by status</option>
+            <option value="Applied">Applied</option>
+            <option value="Interviewed">Interviewed</option>
+            <option value="Offered">Offered</option>
+            <option value="Rejected">Rejected</option>
+        </select>
+        <button onclick="applySearch()">Search</button>
+    </div>
+
     <table>
         <thead>
             <tr>
@@ -89,20 +71,11 @@
         </tbody>
     </table>
 
-    <div id="modalOverlay"></div>
-    <div id="reminderModal">
-        <button class="close-btn" onclick="closeReminderModal()">✖</button>
-        <h3>Set Reminder</h3>
-        <form id="reminderForm">
-            <input type="datetime-local" id="reminderDate" name="reminderDate" required><br>
-            <textarea id="reminderMessage" name="reminderMessage" placeholder="Reminder Message" required></textarea><br>
-            <button type="submit" id="reminderSubmit">Set Reminder</button>
-        </form>
-    </div>
-
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', async () => {
+        document.addEventListener('DOMContentLoaded', fetchJobs);
+
+        async function fetchJobs() {
             const token = localStorage.getItem('token');
 
             try {
@@ -110,134 +83,55 @@
                     headers: { Authorization: token }
                 });
 
-                const jobs = response.data.jobs;
-                const jobTable = document.getElementById('jobTable');
-
-                jobs.forEach(job => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td><a href="#" class="company-link" data-company-id="${job.id}" data-company-name="${job.company}" data-job-id="${job.id}">${job.company}</a></td>
-                        <td>${job.title}</td>
-                        <td>${job.status}</td>
-                        <td>${new Date(job.date).toLocaleDateString()}</td>
-                        <td><a href="job-details.html?id=${job.id}">View</a></td>
-                        <td>
-                            ${job.reminderSet ? '<span class="success-message">Reminder Set</span>' : `<button id="setReminderBtn-${job.id}" onclick="openReminderModal('${job.id}', '${job.company}', '${job.title}', '${job.date}')">Set Reminder</button>`}
-                        </td>
-                    `;
-                    jobTable.appendChild(row);
-                });
-
-                // Add event listeners to company links
-                const companyLinks = document.querySelectorAll('.company-link');
-                companyLinks.forEach(link => {
-                    link.addEventListener('click', async function(event) {
-                        event.preventDefault();
-
-                        const companyId = this.dataset.companyId;
-                        const companyName = this.dataset.companyName;
-                        const jobId = this.dataset.jobId; // Extract job ID
-
-                        try {
-                            const token = localStorage.getItem('token');
-
-                            // Make API call to check if the company exists
-                            const response = await axios.get(`http://localhost:3000/company/${companyId}`, {
-                                headers: { Authorization: token }
-                            });
-
-                            if (response.status === 200) {
-                                // Redirect to company-info.html if the company exists
-                                window.location.href = `company-info.html?companyId=${companyId}`;
-                            }
-                        } catch (error) {
-                            if (error.response && error.response.status === 404) {
-                                // Redirect to add-company.html when the company does not exist
-                                window.location.href = `add-company.html?companyId=${companyId}&companyName=${encodeURIComponent(companyName)}&jobId=${jobId}`;
-                            } else {
-                                console.error('Error fetching company details:', error);
-                                alert('An error occurred. Please try again.');
-                            }
-                        }
-                    });
-                });
+                renderJobs(response.data.jobs);
             } catch (err) {
                 console.error(err);
                 alert('Failed to fetch job applications. Please try again.');
             }
-        });
-
-        function openReminderModal(jobId, company, title, jobDate) {
-            document.getElementById('modalOverlay').style.display = 'block';
-            document.getElementById('reminderModal').style.display = 'block';
-
-            const reminderForm = document.getElementById('reminderForm');
-            reminderForm.dataset.jobId = jobId;
-            reminderForm.dataset.company = company;
-            reminderForm.dataset.title = title;
-            reminderForm.dataset.jobDate = jobDate;
-
-            const dateObj = new Date(jobDate);
-            const formattedDate = dateObj.toISOString().split('T')[0];
-
-            const reminderInput = document.getElementById('reminderDate');
-            reminderInput.value = `${formattedDate}T12:00`;
-            reminderInput.setAttribute('min', `${formattedDate}T00:00`);
-            reminderInput.setAttribute('max', `${formattedDate}T23:59`);
         }
 
-        function closeReminderModal() {
-            document.getElementById('modalOverlay').style.display = 'none';
-            document.getElementById('reminderModal').style.display = 'none';
+        function renderJobs(jobs) {
+            const jobTable = document.getElementById('jobTable');
+            jobTable.innerHTML = ''; // Clear table before rendering new data
+
+            jobs.forEach(job => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${job.company}</td>
+                    <td>${job.title}</td>
+                    <td>${job.status}</td>
+                    <td>${new Date(job.date).toLocaleDateString()}</td>
+                    <td><a href="job-details.html?id=${job.id}">View</a></td>
+                    <td>${job.reminderSet ? '<span class="success-message">Reminder Set</span>' : `<button onclick="openReminderModal('${job.id}', '${job.company}', '${job.title}', '${job.date}')">Set Reminder</button>`}</td>
+                `;
+                jobTable.appendChild(row);
+            });
         }
 
-        document.getElementById('reminderForm').addEventListener('submit', async function(event) {
-            event.preventDefault();
+        async function applySearch() {
+            const query = document.getElementById('searchInput').value;
+            const status = document.getElementById('filterDropdown').value;
+
+            let url = 'http://localhost:3000/job/applications';
+            if (query) {
+                url = `http://localhost:3000/job/search?query=${encodeURIComponent(query)}`;
+            } else if (status) {
+                url = `http://localhost:3000/job/filter?status=${encodeURIComponent(status)}`;
+            }
 
             const token = localStorage.getItem('token');
-            const jobId = event.target.dataset.jobId;
-            const company = event.target.dataset.company;
-            const title = event.target.dataset.title;
-            const jobDate = event.target.dataset.jobDate;
-            const date = document.getElementById('reminderDate').value;
-            const message = `
-                Reminder for job application:
-                - Company: ${company}
-                - Job Title: ${title}
-                - Application Date: ${jobDate}
-                - Job ID: ${jobId}
-                - Custom Message: ${document.getElementById('reminderMessage').value}
-            `;
-
-            const submitButton = document.getElementById('reminderSubmit');
-            submitButton.disabled = true;
 
             try {
-                await axios.post('http://localhost:3000/reminder/set-reminder', {
-                    date, message, jobId
-                }, {
+                const response = await axios.get(url, {
                     headers: { Authorization: token }
                 });
 
-                alert('Reminder set successfully!');
-                closeReminderModal();
-
-                const reminderBtn = document.getElementById(`setReminderBtn-${jobId}`);
-                if (reminderBtn) {
-                    reminderBtn.style.display = 'none';
-                }
-
-                const successMessage = document.getElementById(`successMessage-${jobId}`);
-                if (successMessage) {
-                    successMessage.style.display = 'inline';
-                }
+                renderJobs(response.data.jobs);
             } catch (err) {
                 console.error(err);
-                alert('Failed to set reminder. Please try again.');
-            } finally {
-                submitButton.disabled = false;
+                alert('Failed to search or filter jobs. Please try again.');
             }
-        });
+        }
     </script>
 </body>
 </html>
