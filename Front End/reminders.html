@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Reminders</title>
+</head>
+<body>
+    <h2>Manage Reminders</h2>
+    <form id="setReminderForm">
+        <input type="datetime-local" id="date" name="date" required><br>
+        <textarea id="message" name="message" placeholder="Reminder Message" required></textarea><br>
+        <button type="submit">Set Reminder</button>
+    </form>
+
+    <h3>Existing Reminders</h3>
+    <ul id="remindersList"></ul>
+
+    <button onclick="location.href='dashboard.html'">Back to Dashboard</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const token = localStorage.getItem('token');
+            const remindersList = document.getElementById('remindersList');
+
+            try {
+                // Fetch existing reminders
+                const response = await axios.get('http://localhost:3000/reminder/get-reminders', {
+                    headers: {
+                        Authorization: token
+                    }
+                });
+
+                const reminders = response.data.reminders;
+
+                reminders.forEach(reminder => {
+                    const listItem = document.createElement('li');
+                    listItem.innerHTML = `
+                        <p>${reminder.message} - ${new Date(reminder.date).toLocaleString()}</p>
+                        <button onclick="deleteReminder('${reminder.id}')">Delete</button>
+                    `;
+                    remindersList.appendChild(listItem);
+                });
+            } catch (err) {
+                console.error(err);
+                alert('Failed to fetch reminders. Please try again.');
+            }
+        });
+
+        document.getElementById('setReminderForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const token = localStorage.getItem('token');
+            const date = document.getElementById('date').value;
+            const message = document.getElementById('message').value;
+
+            try {
+                const response = await axios.post('http://localhost:3000/reminder/set-reminder', {
+                    date,
+                    message
+                }, {
+                    headers: {
+                        Authorization: token
+                    }
+                });
+
+                alert('Reminder set successfully!');
+                window.location.reload(); // Reload the page to show the new reminder
+            } catch (err) {
+                console.error(err);
+                alert('Failed to set reminder. Please try again.');
+            }
+        });
+
+        async function deleteReminder(reminderId) {
+            const token = localStorage.getItem('token');
+            try {
+                await axios.delete(`http://localhost:3000/reminder/delete-reminder/${reminderId}`, {
+                    headers: {
+                        Authorization: token
+                    }
+                });
+
+                alert('Reminder deleted successfully!');
+                window.location.reload(); // Reload the page to remove the deleted reminder
+            } catch (err) {
+                console.error(err);
+                alert('Failed to delete reminder. Please try again.');
+            }
+        }
+    </script>
+</body>
+</html>
