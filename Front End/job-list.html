@@ -30,15 +30,6 @@
             color: #333;
         }
 
-        #searchContainer {
-            margin-bottom: 20px;
-        }
-
-        input, select, button {
-            padding: 10px;
-            margin-right: 10px;
-        }
-
         .success-message {
             color: green;
             font-weight: bold;
@@ -137,7 +128,11 @@
             jobs.forEach(job => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${job.company}</td>
+                    <td>
+                        <a href="#" class="company-link" data-company-id="${job.id}" data-company-name="${job.company}" data-job-id="${job.id}">
+                            ${job.company}
+                        </a>
+                    </td>
                     <td>${job.title}</td>
                     <td>${job.status}</td>
                     <td>${new Date(job.date).toLocaleDateString()}</td>
@@ -151,6 +146,40 @@
                     <td>${job.reminderSet ? '<span class="success-message">Reminder Set</span>' : `<button onclick="setReminder('${job.id}')">Set Reminder</button>`}</td>
                 `;
                 jobTable.appendChild(row);
+            });
+
+            // Add event listeners to company links
+            const companyLinks = document.querySelectorAll('.company-link');
+            companyLinks.forEach(link => {
+                link.addEventListener('click', async function(event) {
+                    event.preventDefault();
+
+                    const companyId = this.dataset.companyId;
+                    const companyName = this.dataset.companyName;
+                    const jobId = this.dataset.jobId; // Extract job ID
+
+                    try {
+                        const token = localStorage.getItem('token');
+
+                        // Make API call to check if the company exists
+                        const response = await axios.get(`http://localhost:3000/company/${companyId}`, {
+                            headers: { Authorization: token }
+                        });
+
+                        if (response.status === 200) {
+                            // Redirect to company-info.html if the company exists
+                            window.location.href = `company-info.html?companyId=${companyId}`;
+                        }
+                    } catch (error) {
+                        if (error.response && error.response.status === 404) {
+                            // Redirect to add-company.html when the company does not exist
+                            window.location.href = `add-company.html?companyId=${companyId}&companyName=${encodeURIComponent(companyName)}&jobId=${jobId}`;
+                        } else {
+                            console.error('Error fetching company details:', error);
+                            alert('An error occurred. Please try again.');
+                        }
+                    }
+                });
             });
         }
 
