@@ -50,17 +50,18 @@
                 const jobTable = document.getElementById('jobTable');
 
                 jobs.forEach(job => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${job.company}</td>
-                        <td>${job.title}</td>
-                        <td>${job.status}</td>
-                        <td>${new Date(job.date).toLocaleString()}</td>
-                        <td><a href="job-details.html?id=${job.id}">View</a></td>
-                        <td><button onclick="openReminderModal('${job.id}', '${job.company}', '${job.title}', '${new Date(job.date).toLocaleString()}')">Set Reminder</button></td>
-                    `;
-                    jobTable.appendChild(row);
-                });
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td>${job.company}</td>
+        <td>${job.title}</td>
+        <td>${job.status}</td>
+        <td>${new Date(job.date).toLocaleDateString()}</td>
+        <td><a href="job-details.html?id=${job.id}">View</a></td>
+        <td><button onclick="openReminderModal('${job.id}', '${job.company}', '${job.title}', '${new Date(job.date).toLocaleDateString()}')">Set Reminder</button></td>
+    `;
+    jobTable.appendChild(row);
+});
+
             } catch (err) {
                 console.error(err);
                 alert('Failed to fetch job applications. Please try again.');
