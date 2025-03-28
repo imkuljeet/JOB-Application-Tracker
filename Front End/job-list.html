@@ -5,7 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Job Applications</title>
     <style>
-        /* Basic styles for modal */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        /* Modal Styles */
         #reminderModal {
             display: none;
             position: fixed;
@@ -19,7 +44,6 @@
             text-align: center;
         }
 
-        /* Modal close button */
         .close-btn {
             position: absolute;
             top: 5px;
@@ -30,7 +54,6 @@
             background: none;
         }
 
-        /* Overlay for modal */
         #modalOverlay {
             display: none;
             position: fixed;
@@ -42,17 +65,15 @@
             z-index: 999;
         }
 
-        /* Success message style */
         .success-message {
             color: green;
             font-weight: bold;
-            margin-top: 10px;
         }
     </style>
 </head>
 <body>
     <h2>Job Applications</h2>
-    <table border="1">
+    <table>
         <thead>
             <tr>
                 <th>Company</th>
@@ -68,10 +89,7 @@
         </tbody>
     </table>
 
-    <!-- Modal Overlay -->
     <div id="modalOverlay"></div>
-
-    <!-- Reminder Modal -->
     <div id="reminderModal">
         <button class="close-btn" onclick="closeReminderModal()">✖</button>
         <h3>Set Reminder</h3>
@@ -83,7 +101,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             const token = localStorage.getItem('token');
@@ -99,7 +116,7 @@
                 jobs.forEach(job => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td><a href="#" class="company-link" data-company-id="${job.id}" data-company-name="${job.company}">${job.company}</a></td>
+                        <td><a href="#" class="company-link" data-company-id="${job.id}" data-company-name="${job.company}" data-job-id="${job.id}">${job.company}</a></td>
                         <td>${job.title}</td>
                         <td>${job.status}</td>
                         <td>${new Date(job.date).toLocaleDateString()}</td>
@@ -114,39 +131,36 @@
                 // Add event listeners to company links
                 const companyLinks = document.querySelectorAll('.company-link');
                 companyLinks.forEach(link => {
-    link.addEventListener('click', async function(event) {
-        event.preventDefault();
-        const companyId = this.dataset.companyId;
+                    link.addEventListener('click', async function(event) {
+                        event.preventDefault();
 
-        try {
-            const token = localStorage.getItem('token'); // Assuming the token is stored in local storage
-            const response = await axios.get(`http://localhost:3000/company/${companyId}`, {
-                headers: { Authorization: token }
-            });
+                        const companyId = this.dataset.companyId;
+                        const companyName = this.dataset.companyName;
+                        const jobId = this.dataset.jobId; // Extract job ID
 
-            if (response.status === 200) {
-                const company = response.data.company;
-                console.log('Company Details:', company);
+                        try {
+                            const token = localStorage.getItem('token');
 
-                window.location.href = `company-info.html?companyId=${company.companyId}`;
-                // Option 1: Redirect to a page with company details
-                // window.location.href = `company-details.html?companyId=${companyId}`;
+                            // Make API call to check if the company exists
+                            const response = await axios.get(`http://localhost:3000/company/${companyId}`, {
+                                headers: { Authorization: token }
+                            });
 
-                // Option 2: Display company details in a modal
-                // You can create and populate a modal with the company data here
-            }
-        } catch (error) {
-            console.error('Error fetching company details:', error);
-
-            if (error.response && error.response.status === 404) {
-                alert('Company not found.');
-            } else {
-                alert('An error occurred while fetching the company details. Please try again.');
-            }
-        }
-    });
-});
-
+                            if (response.status === 200) {
+                                // Redirect to company-info.html if the company exists
+                                window.location.href = `company-info.html?companyId=${companyId}`;
+                            }
+                        } catch (error) {
+                            if (error.response && error.response.status === 404) {
+                                // Redirect to add-company.html when the company does not exist
+                                window.location.href = `add-company.html?companyId=${companyId}&companyName=${encodeURIComponent(companyName)}&jobId=${jobId}`;
+                            } else {
+                                console.error('Error fetching company details:', error);
+                                alert('An error occurred. Please try again.');
+                            }
+                        }
+                    });
+                });
             } catch (err) {
                 console.error(err);
                 alert('Failed to fetch job applications. Please try again.');
@@ -163,13 +177,11 @@
             reminderForm.dataset.title = title;
             reminderForm.dataset.jobDate = jobDate;
 
-            // Convert jobDate to YYYY-MM-DD format for datetime-local
             const dateObj = new Date(jobDate);
             const formattedDate = dateObj.toISOString().split('T')[0];
 
-            // Set default value and restrict user to select only time
             const reminderInput = document.getElementById('reminderDate');
-            reminderInput.value = `${formattedDate}T12:00`; // Default time at noon
+            reminderInput.value = `${formattedDate}T12:00`;
             reminderInput.setAttribute('min', `${formattedDate}T00:00`);
             reminderInput.setAttribute('max', `${formattedDate}T23:59`);
         }
@@ -198,7 +210,7 @@
             `;
 
             const submitButton = document.getElementById('reminderSubmit');
-            submitButton.disabled = true; // Prevent multiple submissions
+            submitButton.disabled = true;
 
             try {
                 await axios.post('http://localhost:3000/reminder/set-reminder', {
@@ -210,13 +222,11 @@
                 alert('Reminder set successfully!');
                 closeReminderModal();
 
-                // Hide the "Set Reminder" button
                 const reminderBtn = document.getElementById(`setReminderBtn-${jobId}`);
                 if (reminderBtn) {
                     reminderBtn.style.display = 'none';
                 }
 
-                // Show the success message
                 const successMessage = document.getElementById(`successMessage-${jobId}`);
                 if (successMessage) {
                     successMessage.style.display = 'inline';
@@ -225,7 +235,7 @@
                 console.error(err);
                 alert('Failed to set reminder. Please try again.');
             } finally {
-                submitButton.disabled = false; // Re-enable button
+                submitButton.disabled = false;
             }
         });
     </script>
