@@ -9,20 +9,36 @@
     <h2>Login</h2>
     <form id="loginForm">
         <label>Email:</label>
-        <input type="email" id="email" name ="email" required>
+        <input type="email" id="email" name="email" required>
         <br>
         <label>Password:</label>
-        <input type="password" id="password" name ="password" required>
+        <input type="password" id="password" name="password" required>
         <br>
         <button type="submit">Login</button>
     </form>
     <p>Don't have an account? <a href="register.html">Register</a></p>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.7.8/axios.min.js"></script>
+
     <script>
-        document.getElementById('loginForm').addEventListener('submit', function(event) {
+        document.getElementById('loginForm').addEventListener('submit', async function(event) {
             event.preventDefault();
-            
-            alert('Login functionality goes here!');
+
+            const email = event.target.email.value;
+            const password = event.target.password.value;
+
+            try {
+                const response = await axios.post('http://localhost:3000/user/login', {
+                    email,
+                    password
+                });
+
+                alert('Login successful!');
+                // Optionally, you can redirect the user or perform other actions here
+            } catch (err) {
+                console.error(err);
+                alert(err.response.data.message);
+            }
         });
     </script>
 </body>
