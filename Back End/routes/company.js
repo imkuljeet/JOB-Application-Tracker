@@ -9,7 +9,8 @@ const Company = require('../models/company');
 router.post('/add-company', Authorization, companyController.addCompany);
 router.get('/companies', Authorization, companyController.getCompanies);
 router.get('/:id', Authorization, companyController.getCompany);
-router.put('/company/:id', Authorization, companyController.updateCompany);
+// router.put('/company/:id', Authorization, companyController.updateCompany);
 router.delete('/delete-company:id', Authorization,companyController.deleteCompany );
+router.put('/update-company/:id', Authorization, companyController.updateCompany);
 
 module.exports = router;

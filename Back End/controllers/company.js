@@ -90,28 +90,28 @@ exports.getCompany = async (req, res) => {
     }
 };
 
-exports.updateCompany = async (req, res, next) => {
-    const { name, contactDetails, companySize, industry, notes } = req.body;
+// exports.updateCompany = async (req, res, next) => {
+//     const { name, contactDetails, companySize, industry, notes } = req.body;
 
-    try {
-        const company = await Company.findOne({ where: { id: req.params.id, userId: req.user.id } });
-        if (!company) {
-            return res.status(404).json({ message: 'Company not found' });
-        }
+//     try {
+//         const company = await Company.findOne({ where: { id: req.params.id, userId: req.user.id } });
+//         if (!company) {
+//             return res.status(404).json({ message: 'Company not found' });
+//         }
 
-        company.name = name || company.name;
-        company.contactDetails = contactDetails || company.contactDetails;
-        company.companySize = companySize || company.companySize;
-        company.industry = industry || company.industry;
-        company.notes = notes || company.notes;
+//         company.name = name || company.name;
+//         company.contactDetails = contactDetails || company.contactDetails;
+//         company.companySize = companySize || company.companySize;
+//         company.industry = industry || company.industry;
+//         company.notes = notes || company.notes;
 
-        await company.save();
-        res.status(200).json({ message: 'Company updated successfully', company });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Failed to update company. Please try again.' });
-    }
-};
+//         await company.save();
+//         res.status(200).json({ message: 'Company updated successfully', company });
+//     } catch (err) {
+//         console.error(err);
+//         res.status(500).json({ message: 'Failed to update company. Please try again.' });
+//     }
+// };
 
 exports.deleteCompany = async (req, res, next) => {
     try {
@@ -126,3 +126,36 @@ exports.deleteCompany = async (req, res, next) => {
         res.status(500).json({ message: 'Failed to delete company. Please try again.' });
     }
 };
+
+// const Company = require('../models/company');
+
+exports.updateCompany = async (req, res) => {
+    const companyId = req.params.id;
+    // console.log("COMANY IDD>>>",companyId);
+    const userId = req.user.id; // Assuming the Authorization middleware attaches the user ID to the request
+    const { companyName, contactDetails, companySize, industry, notes } = req.body;
+
+    try {
+        // Find the company by ID and ensure it belongs to the authenticated user
+        const company = await Company.findOne({ where: { id: companyId, userId: userId } });
+
+        if (!company) {
+            return res.status(404).json({ message: 'Company not found or you do not have access to update this company.' });
+        }
+
+        // Update the company's details
+        company.companyName = companyName || company.companyName;
+        company.contactDetails = contactDetails || company.contactDetails;
+        company.companySize = companySize || company.companySize;
+        company.industry = industry || company.industry;
+        company.notes = notes || company.notes;
+
+        await company.save(); // Save the updates to the database
+
+        res.status(200).json({ message: 'Company updated successfully!', company });
+    } catch (err) {
+        console.error('Error updating company:', err);
+        res.status(500).json({ message: 'Failed to update company. Please try again.' });
+    }
+};
+

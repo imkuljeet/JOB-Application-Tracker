@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Company</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            font-weight: bold;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 10px 15px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .back-btn {
+            margin-top: 15px;
+            display: block;
+            text-align: center;
+            color: #007BFF;
+            text-decoration: none;
+        }
+
+        .back-btn:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            color: red;
+            font-size: 14px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Edit Company</h2>
+        <div id="errorMessage" class="error-message"></div>
+        <form id="editCompanyForm">
+            <label for="companyName">Company Name</label>
+            <input type="text" id="companyName" name="companyName" disabled required>
+
+            <label for="contactDetails">Contact Details</label>
+            <input type="text" id="contactDetails" name="contactDetails">
+
+            <label for="companySize">Company Size</label>
+            <input type="text" id="companySize" name="companySize">
+
+            <label for="industry">Industry</label>
+            <input type="text" id="industry" name="industry">
+
+            <label for="notes">Notes</label>
+            <textarea id="notes" name="notes"></textarea>
+
+            <button type="submit">Save Changes</button>
+        </form>
+        <a href="company-profiles.html" class="back-btn">Back to Company Profiles</a>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const companyId = urlParams.get('id');
+
+            if (!companyId) {
+                document.getElementById('errorMessage').textContent = 'Company ID not provided.';
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem('token'); // Assuming token is stored in localStorage
+                const response = await axios.get(`http://localhost:3000/company/${companyId}`, {
+                    headers: { Authorization: token }
+                });
+
+                if (response.status === 200) {
+                    const company = response.data.company;
+
+                    // Populate the form fields with the existing data
+                    document.getElementById('companyName').value = company.companyName || '';
+                    document.getElementById('contactDetails').value = company.contactDetails || '';
+                    document.getElementById('companySize').value = company.companySize || '';
+                    document.getElementById('industry').value = company.industry || '';
+                    document.getElementById('notes').value = company.notes || '';
+                }
+            } catch (error) {
+                console.error('Error fetching company details:', error);
+                document.getElementById('errorMessage').textContent = 'Failed to fetch company details. Please try again.';
+            }
+        });
+
+        document.getElementById('editCompanyForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const companyId = urlParams.get('id');
+
+            const formData = {
+                companyName: document.getElementById('companyName').value,
+                contactDetails: document.getElementById('contactDetails').value,
+                companySize: document.getElementById('companySize').value,
+                industry: document.getElementById('industry').value,
+                notes: document.getElementById('notes').value,
+            };
+
+            try {
+                const token = localStorage.getItem('token'); // Assuming token is stored in localStorage
+                await axios.put(`http://localhost:3000/company/update-company/${companyId}`, formData, {
+                    headers: { Authorization: token }
+                });
+
+                alert('Company details updated successfully!');
+                window.location.href = 'company-list.html'; // Redirect back to company profiles
+            } catch (error) {
+                console.error('Error updating company details:', error);
+                alert('Failed to update company details. Please try again.');
+            }
+        });
+    </script>
+</body>
+</html>
