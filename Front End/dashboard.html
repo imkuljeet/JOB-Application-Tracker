@@ -7,7 +7,7 @@
 </head>
 <body>
     <h2>Job Application Tracker</h2>
-    <p>Welcome, [User's Name]</p>
+    <p id="welcomeMessage"></p>
     
     <h3>Dashboard Overview</h3>
     <ul>
@@ -19,10 +19,26 @@
 
     <button onclick="location.href = 'index.html'">Logout</button>
 
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
+
     <script>
         function logout() {
             alert('Logout functionality goes here!');
+            localStorage.removeItem('token'); // Remove the token from local storage
         }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('token');
+
+            if (token) {
+                const decodedToken = jwt_decode(token);
+                const userName = decodedToken.name;
+
+                const welcomeMessage = document.getElementById('welcomeMessage');
+                welcomeMessage.textContent = `Welcome, ${userName}`;
+            }
+        });
     </script>
 </body>
 </html>
