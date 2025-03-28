@@ -6,6 +6,31 @@ const Authorization = require('../middleware/auth');
 
 const { Op } = require('sequelize');
 
+router.get('/search-filter', Authorization, async (req, res) => {
+    const { query, status } = req.query;
+
+    try {
+        const conditions = {
+            userId: req.user.id
+        };
+
+        if (query) {
+            conditions[Op.or] = [
+                { title: { [Op.like]: `%${query}%` } },
+                { company: { [Op.like]: `%${query}%` } }
+            ];
+        }
+        if (status) {
+            conditions.status = status;
+        }
+
+        const jobs = await Job.findAll({ where: conditions });
+        res.status(200).json({ jobs });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Failed to fetch jobs. Please try again.' });
+    }
+});
 
 router.get('/filter', Authorization, async (req, res) => {
     const { status } = req.query; // Query parameter for filtering

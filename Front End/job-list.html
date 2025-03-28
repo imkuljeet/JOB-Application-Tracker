@@ -38,6 +38,11 @@
             padding: 10px;
             margin-right: 10px;
         }
+
+        .success-message {
+            color: green;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -52,7 +57,6 @@
             <option value="Offered">Offered</option>
             <option value="Rejected">Rejected</option>
         </select>
-        <button onclick="applySearch()">Search</button>
     </div>
 
     <table>
@@ -67,7 +71,7 @@
             </tr>
         </thead>
         <tbody id="jobTable">
-            <!-- Job applications will be inserted here dynamically -->
+            <!-- Job applications will be dynamically inserted here -->
         </tbody>
     </table>
 
@@ -75,6 +79,16 @@
     <script>
         document.addEventListener('DOMContentLoaded', fetchJobs);
 
+        // Debounce function to reduce API calls
+        function debounce(func, delay) {
+            let timeout;
+            return function (...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), delay);
+            };
+        }
+
+        // Fetch jobs initially
         async function fetchJobs() {
             const token = localStorage.getItem('token');
 
@@ -90,9 +104,10 @@
             }
         }
 
+        // Render jobs dynamically
         function renderJobs(jobs) {
             const jobTable = document.getElementById('jobTable');
-            jobTable.innerHTML = ''; // Clear table before rendering new data
+            jobTable.innerHTML = ''; // Clear previous data
 
             jobs.forEach(job => {
                 const row = document.createElement('tr');
@@ -102,20 +117,22 @@
                     <td>${job.status}</td>
                     <td>${new Date(job.date).toLocaleDateString()}</td>
                     <td><a href="job-details.html?id=${job.id}">View</a></td>
-                    <td>${job.reminderSet ? '<span class="success-message">Reminder Set</span>' : `<button onclick="openReminderModal('${job.id}', '${job.company}', '${job.title}', '${job.date}')">Set Reminder</button>`}</td>
+                    <td>${job.reminderSet ? '<span class="success-message">Reminder Set</span>' : `<button onclick="setReminder('${job.id}')">Set Reminder</button>`}</td>
                 `;
                 jobTable.appendChild(row);
             });
         }
 
-        async function applySearch() {
+        // Real-time search and filter functionality
+        const applySearchDebounced = debounce(async function applySearch() {
             const query = document.getElementById('searchInput').value;
             const status = document.getElementById('filterDropdown').value;
 
             let url = 'http://localhost:3000/job/applications';
             if (query) {
                 url = `http://localhost:3000/job/search?query=${encodeURIComponent(query)}`;
-            } else if (status) {
+            }
+            if (status) {
                 url = `http://localhost:3000/job/filter?status=${encodeURIComponent(status)}`;
             }
 
@@ -131,6 +148,14 @@
                 console.error(err);
                 alert('Failed to search or filter jobs. Please try again.');
             }
+        }, 300);
+
+        document.getElementById('searchInput').addEventListener('keyup', applySearchDebounced);
+        document.getElementById('filterDropdown').addEventListener('change', applySearchDebounced);
+
+        // Function to set a reminder for a job (dummy implementation here)
+        function setReminder(jobId) {
+            alert(`Set a reminder for job ID: ${jobId}`);
         }
     </script>
 </body>
