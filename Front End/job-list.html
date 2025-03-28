@@ -13,13 +13,25 @@
                 <th>Company</th>
                 <th>Job Title</th>
                 <th>Status</th>
+                <th>Application Date</th>
                 <th>Actions</th>
+                <th>Set Reminder</th>
             </tr>
         </thead>
         <tbody id="jobTable">
             <!-- Job applications will be inserted here dynamically -->
         </tbody>
     </table>
+
+    <!-- Reminder Modal -->
+    <div id="reminderModal" style="display:none;">
+        <h3>Set Reminder</h3>
+        <form id="reminderForm">
+            <input type="datetime-local" id="reminderDate" name="reminderDate" required><br>
+            <textarea id="reminderMessage" name="reminderMessage" placeholder="Reminder Message" required></textarea><br>
+            <button type="submit">Set Reminder</button>
+        </form>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
@@ -43,13 +55,47 @@
                         <td>${job.company}</td>
                         <td>${job.title}</td>
                         <td>${job.status}</td>
+                        <td>${new Date(job.date).toLocaleString()}</td>
                         <td><a href="job-details.html?id=${job.id}">View</a></td>
+                        <td><button onclick="openReminderModal('${job.id}', '${new Date(job.date).toLocaleString()}')">Set Reminder</button></td>
                     `;
                     jobTable.appendChild(row);
                 });
             } catch (err) {
                 console.error(err);
                 alert('Failed to fetch job applications. Please try again.');
+            }
+        });
+
+        function openReminderModal(jobId, jobDate) {
+            document.getElementById('reminderModal').style.display = 'block';
+            document.getElementById('reminderForm').dataset.jobId = jobId;
+            document.getElementById('reminderDate').value = jobDate.replace(' ', 'T');
+        }
+
+        document.getElementById('reminderForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const token = localStorage.getItem('token');
+            const jobId = event.target.dataset.jobId;
+            const date = document.getElementById('reminderDate').value;
+            const message = document.getElementById('reminderMessage').value;
+
+            try {
+                await axios.post('http://localhost:3000/reminder/set-reminder', {
+                    date,
+                    message: `${message} (Job ID: ${jobId})`
+                }, {
+                    headers: {
+                        Authorization: token
+                    }
+                });
+
+                alert('Reminder set successfully!');
+                window.location.reload(); // Reload the page to show the new reminder
+            } catch (err) {
+                console.error(err);
+                alert('Failed to set reminder. Please try again.');
             }
         });
     </script>
