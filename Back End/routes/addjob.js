@@ -4,6 +4,9 @@ const router = express.Router();
 const addjobController = require('../controllers/addjob');
 const Authorization = require('../middleware/auth');
 
+const { Op } = require('sequelize');
+
+
 router.get('/filter', Authorization, async (req, res) => {
     const { status } = req.query; // Query parameter for filtering
     // console.log("STATUS>>>>",status);
@@ -18,6 +21,25 @@ router.get('/filter', Authorization, async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Failed to filter jobs. Please try again.' });
+    }
+});
+
+router.get('/search', Authorization, async (req, res) => {
+    const { query } = req.query; // Query parameter for search
+    try {
+        const jobs = await Job.findAll({
+            where: {
+                [Op.or]: [
+                    { title: { [Op.like]: `%${query}%` } },
+                    { company: { [Op.like]: `%${query}%` } }
+                ],
+                userId: req.user.id
+            }
+        });
+        res.status(200).json({ jobs });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Failed to search jobs. Please try again.' });
     }
 });
 
@@ -90,24 +112,7 @@ router.put('/:id', Authorization, async (req, res) => {
 });
 
 // routes/addjob.js
-router.get('/search', Authorization, async (req, res) => {
-    const { query } = req.query; // Query parameter for search
-    try {
-        const jobs = await Job.findAll({
-            where: {
-                [Op.or]: [
-                    { title: { [Op.like]: `%${query}%` } },
-                    { company: { [Op.like]: `%${query}%` } }
-                ],
-                userId: req.user.id
-            }
-        });
-        res.status(200).json({ jobs });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Failed to search jobs. Please try again.' });
-    }
-});
+
 
 
 
