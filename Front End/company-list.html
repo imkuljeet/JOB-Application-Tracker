@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company Profiles</title>
+</head>
+<body>
+    <h2>Company Profiles</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Company Name</th>
+                <th>Contact Details</th>
+                <th>Company Size</th>
+                <th>Industry</th>
+                <th>Notes</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="companyTable">
+            <!-- Company profiles will be inserted here dynamically -->
+        </tbody>
+    </table>
+    <button onclick="location.href='dashboard.html'">Back to Dashboard</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const token = localStorage.getItem('token');
+
+            try {
+                const response = await axios.get('http://localhost:3000/company/companies', {
+                    headers: { Authorization: token }
+                });
+
+                const companies = response.data.companies;
+                const companyTable = document.getElementById('companyTable');
+
+                companies.forEach(company => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${company.name}</td>
+                        <td>${company.contactDetails}</td>
+                        <td>${company.companySize}</td>
+                        <td>${company.industry}</td>
+                        <td>${company.notes}</td>
+                        <td>
+                            <a href="edit-company.html?id=${company.id}">Edit</a>
+                            <button onclick="deleteCompany('${company.id}')">Delete</button>
+                        </td>
+                    `;
+                    companyTable.appendChild(row);
+                });
+
+            } catch (err) {
+                console.error(err);
+                alert('Failed to fetch company profiles. Please try again.');
+            }
+        });
+
+        async function deleteCompany(companyId) {
+            const token = localStorage.getItem('token');
+            try {
+                await axios.post(`http://localhost:3000/company/${companyId}`, {
+                    headers: { Authorization: token }
+                });
+
+                alert('Company deleted successfully!');
+                window.location.reload(); // Reload the page to remove the deleted company
+            } catch (err) {
+                console.error(err);
+                alert('Failed to delete company. Please try again.');
+            }
+        }
+    </script>
+</body>
+</html>

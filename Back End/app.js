@@ -5,13 +5,15 @@ const sequelize = require('./util/database');
 const User = require("./models/users");
 const Job = require("./models/jobs");
 const Reminder = require("./models/reminder");
+const Company = require("./models/company");
+
 require('dotenv').config();
 
 const userRoutes = require("./routes/user");
 const addjobRoutes = require('./routes/addjob');
 // const reminderRoutes = require('./routes/reminder");
 const reminderRoutes = require('./routes/reminder');
-
+const companyRoutes = require('./routes/company');
 
 const app = express();
 const port = 3000;
@@ -25,6 +27,8 @@ app.use(cors()); // Enable CORS
 app.use('/user', userRoutes);
 app.use('/job', addjobRoutes);
 app.use('/reminder', reminderRoutes);
+app.use('/company', companyRoutes);
+
 
 // Define associations
 User.hasMany(Job);
@@ -32,6 +36,9 @@ Job.belongsTo(User);
 
 User.hasMany(Reminder);
 Reminder.belongsTo(User);
+
+User.hasMany(Company); // Each user can have multiple company profiles
+Company.belongsTo(User);
 
 // Start the server
 app.listen(port, () => {
