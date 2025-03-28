@@ -1,3 +1,4 @@
+// models/job.js
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../util/database');
 
@@ -29,6 +30,11 @@ const Job = sequelize.define('Job', {
         allowNull: false,
         defaultValue: 'Applied'
     },
+    reminderSet: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
+    }
 });
 
 module.exports = Job;

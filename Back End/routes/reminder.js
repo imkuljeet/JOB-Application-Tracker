@@ -4,6 +4,8 @@ const router = express.Router();
 const Reminder = require('../models/reminder');
 const Authorization = require('../middleware/auth');
 
+const Job = require('../models/jobs');
+
 router.post('/set-reminder', Authorization, async (req, res) => {
     const { date, message } = req.body;
 
@@ -13,6 +15,12 @@ router.post('/set-reminder', Authorization, async (req, res) => {
             message,
             userId: req.user.id
         });
+
+        await Job.update(
+            { reminderSet: true },
+            { where: { id: req.body.jobId } }
+        );
+
         res.status(201).json({ message: 'Reminder set successfully!', reminder: newReminder });
     } catch (err) {
         console.error(err);

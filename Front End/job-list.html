@@ -105,8 +105,7 @@
                         <td>${new Date(job.date).toLocaleDateString()}</td>
                         <td><a href="job-details.html?id=${job.id}">View</a></td>
                         <td>
-                            <button id="setReminderBtn-${job.id}" onclick="openReminderModal('${job.id}', '${job.company}', '${job.title}', '${job.date}')">Set Reminder</button>
-                            <span id="successMessage-${job.id}" class="success-message" style="display: none;">Reminder Set</span>
+                            ${job.reminderSet ? '<span class="success-message">Reminder Set</span>' : `<button id="setReminderBtn-${job.id}" onclick="openReminderModal('${job.id}', '${job.company}', '${job.title}', '${job.date}')">Set Reminder</button>`}
                         </td>
                     `;
                     jobTable.appendChild(row);
@@ -167,7 +166,7 @@
 
             try {
                 await axios.post('http://localhost:3000/reminder/set-reminder', {
-                    date, message
+                    date, message, jobId
                 }, {
                     headers: { Authorization: token }
                 });
