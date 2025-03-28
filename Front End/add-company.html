@@ -8,7 +8,7 @@
 <body>
     <h2>Add Company Profile</h2>
     <form id="addCompanyForm">
-        <input type="text" name="name" placeholder="Company Name" required><br>
+        <input type="text" name="name" id="companyName" placeholder="Company Name" required><br>
         <input type="text" name="contactDetails" placeholder="Contact Details"><br>
         <input type="text" name="companySize" placeholder="Company Size"><br>
         <input type="text" name="industry" placeholder="Industry"><br>
@@ -20,32 +20,45 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
     <script>
-        document.getElementById('addCompanyForm').addEventListener('submit', async function(event) {
-            event.preventDefault();
+        // Function to get URL parameters
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
 
-            const token = localStorage.getItem('token');
-
-            const name = event.target.name.value;
-            const contactDetails = event.target.contactDetails.value;
-            const companySize = event.target.companySize.value;
-            const industry = event.target.industry.value;
-            const notes = event.target.notes.value;
-
-            try {
-                const response = await axios.post('http://localhost:3000/company/add-company', {
-                    name, contactDetails, companySize, industry, notes
-                }, {
-                    headers: {
-                        Authorization: token
-                    }
-                });
-
-                alert('Company added successfully!');
-                window.location.href = 'dashboard.html';
-            } catch (err) {
-                console.error(err);
-                alert('Failed to add company. Please try again.');
+        document.addEventListener('DOMContentLoaded', () => {
+            const companyName = getQueryParam('companyName');
+            if (companyName) {
+                document.getElementById('companyName').value = decodeURIComponent(companyName);
             }
+
+            document.getElementById('addCompanyForm').addEventListener('submit', async function(event) {
+                event.preventDefault();
+
+                const token = localStorage.getItem('token');
+
+                const name = event.target.name.value;
+                const contactDetails = event.target.contactDetails.value;
+                const companySize = event.target.companySize.value;
+                const industry = event.target.industry.value;
+                const notes = event.target.notes.value;
+
+                try {
+                    const response = await axios.post('http://localhost:3000/company/add-company', {
+                        name, contactDetails, companySize, industry, notes
+                    }, {
+                        headers: {
+                            Authorization: token
+                        }
+                    });
+
+                    alert('Company added successfully!');
+                    window.location.href = 'dashboard.html';
+                } catch (err) {
+                    console.error(err);
+                    alert('Failed to add company. Please try again.');
+                }
+            });
         });
     </script>
 </body>
