@@ -3,21 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile</title>
+    <title>Edit Profile</title>
 </head>
 <body>
-    <h2>User Profile</h2>
-    <form>
-        <label>Name:</label>
-        <input type="text" value="John Doe">
-        <br>
-        <label>Email:</label>
-        <input type="email" value="johndoe@example.com" disabled>
-        <br>
-        <label>Career Goals:</label>
-        <textarea>Become a senior developer</textarea>
-        <br>
-        <button type="submit">Save</button>
+    <h2>Edit Profile</h2>
+    <form id="editProfileForm">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required><br><br>
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required><br><br>
+
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password"><br><br>
+
+        <button type="submit">Update Profile</button>
     </form>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const token = localStorage.getItem('token');
+
+            try {
+                // Fetch user profile
+                const response = await axios.get('http://localhost:3000/user/profile', {
+                    headers: { Authorization: token }
+                });
+
+                // Populate form fields with user data
+                const user = response.data.user;
+                document.getElementById('name').value = user.name;
+                document.getElementById('email').value = user.email;
+
+            } catch (err) {
+                console.error(err);
+                alert('Failed to fetch profile data. Please try again.');
+            }
+        });
+
+        document.getElementById('editProfileForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const token = localStorage.getItem('token');
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await axios.put('http://localhost:3000/user/profile', {
+                    name, email, password
+                }, {
+                    headers: { Authorization: token }
+                });
+
+                // Update the token in local storage
+                localStorage.setItem('token', response.data.token);
+
+                alert('Profile updated successfully!');
+                window.location.href = 'dashboard.html';
+            } catch (err) {
+                console.error(err);
+                alert('Failed to update profile. Please try again.');
+            }
+        });
+    </script>
 </body>
 </html>
