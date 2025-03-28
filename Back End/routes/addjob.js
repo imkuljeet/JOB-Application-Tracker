@@ -97,6 +97,33 @@ router.get('/:id', Authorization, async (req, res) => {
     }
 });
 
+router.put('/:id/notes', Authorization, async (req, res) => {
+    const { notes } = req.body;
+
+    // Check if notes is provided
+    if (notes === undefined) {
+        return res.status(400).json({ message: 'Notes field is required.' });
+    }
+
+    try {
+        // Find the job associated with the user and ID
+        const job = await Job.findOne({ where: { id: req.params.id, userId: req.user.id } });
+        if (!job) {
+            return res.status(404).json({ message: 'Job not found.' });
+        }
+
+        // Update the notes column
+        job.notes = notes;
+
+        await job.save();
+
+        res.status(200).json({ message: 'Notes updated successfully!', job });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Failed to update notes. Please try again.' });
+    }
+});
+
 // Delete job
 router.delete('/:id', Authorization, async (req, res) => {
     try {
