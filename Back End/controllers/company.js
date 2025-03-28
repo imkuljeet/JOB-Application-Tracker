@@ -69,12 +69,12 @@ exports.updateCompany = async (req, res, next) => {
 
 exports.deleteCompany = async (req, res, next) => {
     try {
-        console.log("REQ PARAM>>>>>>",req.params.id,req.user.id);
-        // const result = await Company.destroy({ where: { id: req.params.id, userId: req.user.id } });
-        // if (result === 0) {
-        //     return res.status(404).json({ message: 'Company not found' });
-        // }
-        // res.status(200).json({ message: 'Company deleted successfully' });
+        console.log("REQ PARASMS>>>>>>>>>>>>>>>>>>>>>>>>>>>>",req.params.id);
+        const result = await Company.destroy({ where: { id: req.params.id, userId: req.user.id } });
+        if (result === 0) {
+            return res.status(404).json({ message: 'Company not found' });
+        }
+        res.status(200).json({ message: 'Company deleted successfully' });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Failed to delete company. Please try again.' });

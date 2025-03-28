@@ -63,7 +63,7 @@
         async function deleteCompany(companyId) {
             const token = localStorage.getItem('token');
             try {
-                await axios.post(`http://localhost:3000/company/${companyId}`, {
+                await axios.delete(`http://localhost:3000/company/delete-company${companyId}`, {
                     headers: { Authorization: token }
                 });
 
