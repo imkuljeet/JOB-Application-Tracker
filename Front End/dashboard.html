@@ -4,6 +4,43 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        .chart-container {
+            width: 60%; /* Reduced size */
+            max-width: 600px; /* Reduced size */
+            margin: 20px auto;
+        }
+
+        canvas {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        h3 {
+            text-align: center;
+            color: #333;
+        }
+
+        button {
+            padding: 10px 15px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
 </head>
 <body>
     <h2>Job Application Tracker</h2>
@@ -20,10 +57,25 @@
         <li><a href="profile.html">Edit Profile</a></li>
     </ul>
 
+    <h3>Application Progress Visualization</h3>
+    
+    <!-- Application Status Pie Chart -->
+    <div class="chart-container">
+        <h3>Application Status Overview</h3>
+        <canvas id="statusChart" width="400" height="200"></canvas>
+    </div>
+    
+    <!-- Application Timeline Line Chart -->
+    <div class="chart-container">
+        <h3>Application Timeline</h3>
+        <canvas id="timelineChart" width="400" height="200"></canvas>
+    </div>
+
     <button onclick="logout()">Logout</button>
 
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
         function logout() {
@@ -57,6 +109,61 @@
                 } catch (err) {
                     console.error(err);
                     alert('Failed to fetch profile data. Please try again.');
+                }
+
+                // Fetch job application data and render charts
+                try {
+                    const response = await axios.get('http://localhost:3000/job/applications', {
+                        headers: { Authorization: token }
+                    });
+                    const jobs = response.data.jobs;
+
+                    // Data for Application Status Chart
+                    const statuses = ['Applied', 'Interviewed', 'Offered', 'Rejected'];
+                    const statusCounts = statuses.map(status =>
+                        jobs.filter(job => job.status === status).length
+                    );
+
+                    // Data for Application Timeline Chart
+                    const applicationDates = jobs.map(job => new Date(job.date));
+                    const timelineData = applicationDates.reduce((acc, date) => {
+                        const day = date.toISOString().split('T')[0];
+                        acc[day] = (acc[day] || 0) + 1;
+                        return acc;
+                    }, {});
+                    const timelineLabels = Object.keys(timelineData);
+                    const timelineCounts = Object.values(timelineData);
+
+                    // Render Status Pie Chart
+                    const statusCtx = document.getElementById('statusChart').getContext('2d');
+                    new Chart(statusCtx, {
+                        type: 'pie',
+                        data: {
+                            labels: statuses,
+                            datasets: [{
+                                data: statusCounts,
+                                backgroundColor: ['#007BFF', '#FFC107', '#28A745', '#DC3545']
+                            }]
+                        }
+                    });
+
+                    // Render Timeline Line Chart
+                    const timelineCtx = document.getElementById('timelineChart').getContext('2d');
+                    new Chart(timelineCtx, {
+                        type: 'line',
+                        data: {
+                            labels: timelineLabels,
+                            datasets: [{
+                                label: 'Applications Over Time',
+                                data: timelineCounts,
+                                borderColor: '#007BFF',
+                                fill: false
+                            }]
+                        }
+                    });
+                } catch (err) {
+                    console.error(err);
+                    alert('Failed to fetch job application data.');
                 }
             }
         });
