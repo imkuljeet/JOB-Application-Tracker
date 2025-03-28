@@ -40,6 +40,10 @@ Reminder.belongsTo(User);
 User.hasMany(Company); // Each user can have multiple company profiles
 Company.belongsTo(User);
 
+// Define associations (if not already defined in models)
+Job.hasMany(Company, { foreignKey: 'jobId' });
+Company.belongsTo(Job, { foreignKey: 'jobId' });
+
 // Start the server
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);

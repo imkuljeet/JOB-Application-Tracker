@@ -1,6 +1,7 @@
 // models/company.js
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../util/database');
+const Job = require('./jobs'); // Import Job model
 
 const Company = sequelize.define('Company', {
     id: {
@@ -8,10 +9,6 @@ const Company = sequelize.define('Company', {
         autoIncrement: true,
         allowNull: false,
         primaryKey: true
-    },
-    name: {
-        type: DataTypes.STRING,
-        allowNull: false
     },
     contactDetails: {
         type: DataTypes.STRING,
@@ -28,7 +25,22 @@ const Company = sequelize.define('Company', {
     notes: {
         type: DataTypes.TEXT,
         allowNull: true
+    },
+    userId: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
+    jobId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        // references: {
+        //     model: 'jobs', // name of the target table
+        //     key: 'id'      // key in the target table
+        // }
     }
 });
+
+// Define association
+// Company.belongsTo(Job, { foreignKey: 'jobId' });
 
 module.exports = Company;

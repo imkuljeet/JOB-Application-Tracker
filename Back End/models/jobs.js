@@ -1,6 +1,7 @@
 // models/job.js
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../util/database');
+const Company = require('./company'); // Import Company model
 
 const Job = sequelize.define('Job', {
     id: {
@@ -36,5 +37,8 @@ const Job = sequelize.define('Job', {
         defaultValue: false
     }
 });
+
+// Define association
+// Job.hasMany(Company, { foreignKey: 'jobId' });
 
 module.exports = Job;

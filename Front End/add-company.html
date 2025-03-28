@@ -8,7 +8,8 @@
 <body>
     <h2>Add Company Profile</h2>
     <form id="addCompanyForm">
-        <input type="text" name="name" id="companyName" placeholder="Company Name" required><br>
+        <input type="hidden" name="jobId" id="jobId"><br>
+        <input type="text" name="name" id="companyName" placeholder="Company Name" required readonly><br>
         <input type="text" name="contactDetails" placeholder="Contact Details"><br>
         <input type="text" name="companySize" placeholder="Company Size"><br>
         <input type="text" name="industry" placeholder="Industry"><br>
@@ -26,8 +27,14 @@
             return urlParams.get(param);
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            const jobId = getQueryParam('jobId');
             const companyName = getQueryParam('companyName');
+
+            if (jobId) {
+                document.getElementById('jobId').value = decodeURIComponent(jobId);
+            }
+
             if (companyName) {
                 document.getElementById('companyName').value = decodeURIComponent(companyName);
             }
@@ -37,7 +44,7 @@
 
                 const token = localStorage.getItem('token');
 
-                const name = event.target.name.value;
+                const jobId = event.target.jobId.value;
                 const contactDetails = event.target.contactDetails.value;
                 const companySize = event.target.companySize.value;
                 const industry = event.target.industry.value;
@@ -45,7 +52,7 @@
 
                 try {
                     const response = await axios.post('http://localhost:3000/company/add-company', {
-                        name, contactDetails, companySize, industry, notes
+                        jobId, contactDetails, companySize, industry, notes
                     }, {
                         headers: {
                             Authorization: token

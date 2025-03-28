@@ -1,17 +1,27 @@
 // controllers/company.js
 const Company = require('../models/company');
 
+const Job = require('../models/jobs');
+// const Company = require('../models/company');
+
 exports.addCompany = async (req, res, next) => {
-    const { name, contactDetails, companySize, industry, notes } = req.body;
+    const { jobId, contactDetails, companySize, industry, notes } = req.body;
 
     try {
+        // Fetch the job by ID
+        const job = await Job.findByPk(jobId);
+        if (!job) {
+            return res.status(404).json({ message: 'Job not found' });
+        }
+
+        // Create a new company entry with the job's company name
         const newCompany = await Company.create({
-            name,
             contactDetails,
             companySize,
             industry,
             notes,
-            userId: req.user.id // Assuming userId is stored in req.user
+            userId: req.user.id,
+            jobId: job.id
         });
 
         res.status(201).json({ message: 'Company added successfully!', company: newCompany });
@@ -21,15 +31,26 @@ exports.addCompany = async (req, res, next) => {
     }
 };
 
+
+// const Company = require('../models/company');
+
 exports.getCompanies = async (req, res, next) => {
     try {
-        const companies = await Company.findAll({ where: { userId: req.user.id } });
+        const companies = await Company.findAll({
+            where: { userId: req.user.id },
+            include: {
+                model: Job,
+                attributes: ['company']
+            }
+        });
+
         res.status(200).json({ companies });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Failed to fetch companies. Please try again.' });
     }
 };
+
 
 exports.getCompany = async (req, res, next) => {
     try {

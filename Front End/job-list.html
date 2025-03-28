@@ -99,7 +99,7 @@
                 jobs.forEach(job => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td><a href="#" class="company-link" data-company-id="${job.companyId}" data-company-name="${job.company}">${job.company}</a></td>
+                        <td><a href="#" class="company-link" data-company-id="${job.id}" data-company-name="${job.company}">${job.company}</a></td>
                         <td>${job.title}</td>
                         <td>${job.status}</td>
                         <td>${new Date(job.date).toLocaleDateString()}</td>
@@ -118,7 +118,7 @@
                         event.preventDefault();
                         const companyId = this.dataset.companyId;
                         const companyName = this.dataset.companyName;
-                        window.location.href = `add-company.html?companyId=${companyId}&companyName=${encodeURIComponent(companyName)}`;
+                        window.location.href = `add-company.html?jobId=${companyId}&companyName=${encodeURIComponent(companyName)}`;
                     });
                 });
 
