@@ -114,13 +114,38 @@
                 // Add event listeners to company links
                 const companyLinks = document.querySelectorAll('.company-link');
                 companyLinks.forEach(link => {
-                    link.addEventListener('click', function(event) {
-                        event.preventDefault();
-                        const companyId = this.dataset.companyId;
-                        const companyName = this.dataset.companyName;
-                        window.location.href = `add-company.html?jobId=${companyId}&companyName=${encodeURIComponent(companyName)}`;
-                    });
-                });
+    link.addEventListener('click', async function(event) {
+        event.preventDefault();
+        const companyId = this.dataset.companyId;
+
+        try {
+            const token = localStorage.getItem('token'); // Assuming the token is stored in local storage
+            const response = await axios.get(`http://localhost:3000/company/${companyId}`, {
+                headers: { Authorization: token }
+            });
+
+            if (response.status === 200) {
+                const company = response.data.company;
+                console.log('Company Details:', company);
+
+                window.location.href = `company-info.html?companyId=${company.companyId}`;
+                // Option 1: Redirect to a page with company details
+                // window.location.href = `company-details.html?companyId=${companyId}`;
+
+                // Option 2: Display company details in a modal
+                // You can create and populate a modal with the company data here
+            }
+        } catch (error) {
+            console.error('Error fetching company details:', error);
+
+            if (error.response && error.response.status === 404) {
+                alert('Company not found.');
+            } else {
+                alert('An error occurred while fetching the company details. Please try again.');
+            }
+        }
+    });
+});
 
             } catch (err) {
                 console.error(err);

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company Info</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        p {
+            margin: 10px 0;
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #007BFF;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .back-btn:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Company Information</h2>
+        <div id="companyInfoContainer">
+            <!-- Company information will be dynamically loaded here -->
+        </div>
+        <a href="job-list.html" class="back-btn">Back to Job Applications</a>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+    // Extract companyId from query parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const companyId = urlParams.get('companyId');
+
+    if (!companyId) {
+        alert('Company ID not provided.');
+        return;
+    }
+
+    try {
+        const token = localStorage.getItem('token'); // Assuming the token is stored in local storage
+        const response = await axios.get(`http://localhost:3000/company/${companyId}`, {
+            headers: { Authorization: token }
+        });
+
+        if (response.status === 200) {
+            const company = response.data.company;
+
+            // Display company details, including the company name
+            const container = document.getElementById('companyInfoContainer');
+            container.innerHTML = `
+                <p><strong>Company Name:</strong> ${company.companyName || 'N/A'}</p>
+                <p><strong>Contact Details:</strong> ${company.contactDetails || 'N/A'}</p>
+                <p><strong>Company Size:</strong> ${company.companySize || 'N/A'}</p>
+                <p><strong>Industry:</strong> ${company.industry || 'N/A'}</p>
+                <p><strong>Notes:</strong> ${company.notes || 'No notes available'}</p>
+            `;
+        }
+    } catch (error) {
+        console.error('Error fetching company details:', error);
+
+        if (error.response && error.response.status === 404) {
+            alert('Company not found.');
+        } else {
+            alert('An error occurred while fetching the company details. Please try again.');
+        }
+    }
+});
+
+ </script>
+</body>
+</html>

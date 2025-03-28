@@ -52,13 +52,38 @@ exports.getCompanies = async (req, res, next) => {
 };
 
 
-exports.getCompany = async (req, res, next) => {
+const { Op } = require('sequelize');
+// const Company = require('../models/company');
+// const Job = require('../models/jobs');
+
+exports.getCompany = async (req, res) => {
     try {
-        const company = await Company.findOne({ where: { id: req.params.id, userId: req.user.id } });
+        // Find the company details, including the company name from the Job table
+        const company = await Company.findOne({
+            where: { id: req.params.id, userId: req.user.id },
+            include: [
+                {
+                    model: Job, // Include the Job table
+                    attributes: ['company'], // Fetch only the 'company' field from the Job table
+                }
+            ]
+        });
+
         if (!company) {
             return res.status(404).json({ message: 'Company not found' });
         }
-        res.status(200).json({ company });
+
+        // Respond with the merged data (Company table details + Job's company name and company ID)
+        res.status(200).json({ 
+            company: {
+                companyId: company.id, // Include the Company ID
+                companyName: company.Job.company, // Company name from the Job table
+                contactDetails: company.contactDetails,
+                companySize: company.companySize,
+                industry: company.industry,
+                notes: company.notes
+            } 
+        });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Failed to fetch company details. Please try again.' });

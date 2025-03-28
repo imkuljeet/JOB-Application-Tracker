@@ -8,7 +8,7 @@ const Company = require('../models/company');
 
 router.post('/add-company', Authorization, companyController.addCompany);
 router.get('/companies', Authorization, companyController.getCompanies);
-router.get('/company/:id', Authorization, companyController.getCompany);
+router.get('/:id', Authorization, companyController.getCompany);
 router.put('/company/:id', Authorization, companyController.updateCompany);
 router.delete('/delete-company:id', Authorization,companyController.deleteCompany );
 
