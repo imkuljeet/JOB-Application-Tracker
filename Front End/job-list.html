@@ -41,6 +41,13 @@
             background: rgba(0, 0, 0, 0.5);
             z-index: 999;
         }
+
+        /* Success message style */
+        .success-message {
+            color: green;
+            font-weight: bold;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -97,7 +104,10 @@
                         <td>${job.status}</td>
                         <td>${new Date(job.date).toLocaleDateString()}</td>
                         <td><a href="job-details.html?id=${job.id}">View</a></td>
-                        <td><button onclick="openReminderModal('${job.id}', '${job.company}', '${job.title}', '${job.date}')">Set Reminder</button></td>
+                        <td>
+                            <button id="setReminderBtn-${job.id}" onclick="openReminderModal('${job.id}', '${job.company}', '${job.title}', '${job.date}')">Set Reminder</button>
+                            <span id="successMessage-${job.id}" class="success-message" style="display: none;">Reminder Set</span>
+                        </td>
                     `;
                     jobTable.appendChild(row);
                 });
@@ -164,6 +174,18 @@
 
                 alert('Reminder set successfully!');
                 closeReminderModal();
+
+                // Hide the "Set Reminder" button
+                const reminderBtn = document.getElementById(`setReminderBtn-${jobId}`);
+                if (reminderBtn) {
+                    reminderBtn.style.display = 'none';
+                }
+
+                // Show the success message
+                const successMessage = document.getElementById(`successMessage-${jobId}`);
+                if (successMessage) {
+                    successMessage.style.display = 'inline';
+                }
             } catch (err) {
                 console.error(err);
                 alert('Failed to set reminder. Please try again.');
