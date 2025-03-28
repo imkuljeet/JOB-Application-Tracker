@@ -12,12 +12,10 @@ const Authorization = require('../middleware/auth');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-// routes/user.js
-
 router.get('/profile', Authorization, async (req, res) => {
     try {
         const user = await User.findByPk(req.user.id, {
-            attributes: ['name', 'email'] // Include other fields as needed
+            attributes: ['name', 'email', 'careerGoals'] // Include careerGoals field
         });
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
@@ -30,7 +28,7 @@ router.get('/profile', Authorization, async (req, res) => {
 });
 
 router.put('/profile', Authorization, async (req, res) => {
-    const { name, email, password } = req.body;
+    const { name, email, password, careerGoals } = req.body;
 
     try {
         const user = await User.findByPk(req.user.id);
@@ -40,6 +38,7 @@ router.put('/profile', Authorization, async (req, res) => {
 
         user.name = name || user.name;
         user.email = email || user.email;
+        user.careerGoals = careerGoals || user.careerGoals;
         if (password) {
             user.password = await bcrypt.hash(password, 10); // Hash the password before saving
         }
@@ -58,5 +57,6 @@ router.put('/profile', Authorization, async (req, res) => {
         res.status(500).json({ message: 'Failed to update profile. Please try again.' });
     }
 });
+
 
 module.exports = router;

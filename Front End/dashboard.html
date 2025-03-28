@@ -8,6 +8,7 @@
 <body>
     <h2>Job Application Tracker</h2>
     <p id="welcomeMessage"></p>
+    <p id="careerGoals"></p>
     
     <h3>Dashboard Overview</h3>
     <ul>
@@ -28,15 +29,28 @@
             localStorage.removeItem('token'); // Remove the token from local storage
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             const token = localStorage.getItem('token');
 
             if (token) {
-                const decodedToken = jwt_decode(token);
-                const userName = decodedToken.name;
+                try {
+                    const response = await axios.get('http://localhost:3000/user/profile', {
+                        headers: { Authorization: token }
+                    });
 
-                const welcomeMessage = document.getElementById('welcomeMessage');
-                welcomeMessage.textContent = `Welcome, ${userName}`;
+                    const user = response.data.user;
+                    const userName = user.name;
+                    const userCareerGoals = user.careerGoals;
+
+                    const welcomeMessage = document.getElementById('welcomeMessage');
+                    welcomeMessage.textContent = `Welcome, ${userName}`;
+
+                    const careerGoalsElement = document.getElementById('careerGoals');
+                    careerGoalsElement.textContent = `Career Goals: ${userCareerGoals}`;
+                } catch (err) {
+                    console.error(err);
+                    alert('Failed to fetch profile data. Please try again.');
+                }
             }
         });
     </script>

@@ -1,29 +1,39 @@
-const Sequelize = require('sequelize');
+// models/user.js
+const { Sequelize, DataTypes } = require('sequelize');
+const bcrypt = require('bcrypt');
 const sequelize = require('../util/database');
 
-const User = sequelize.define('user', {
+const User = sequelize.define('User', {
     id: {
-        type: Sequelize.INTEGER,
-        primaryKey: true,
+        type: DataTypes.INTEGER,
         autoIncrement: true,
-        allowNull: false
+        allowNull: false,
+        primaryKey: true
     },
     name: {
-        type: Sequelize.STRING,
+        type: DataTypes.STRING,
         allowNull: false
     },
     email: {
-        type: Sequelize.STRING,
+        type: DataTypes.STRING,
         allowNull: false,
-        unique: true,
-        validate: {
-            isEmail: true
-        }
+        unique: true
     },
     password: {
-        type: Sequelize.STRING,
+        type: DataTypes.STRING,
         allowNull: false
+    },
+    careerGoals: {
+        type: DataTypes.TEXT,
+        allowNull: true // Career goals are optional
     }
 });
+
+// // Hash password before saving
+// User.beforeSave(async (user, options) => {
+//     if (user.password) {
+//         user.password = await bcrypt.hash(user.password, 10);
+//     }
+// });
 
 module.exports = User;
