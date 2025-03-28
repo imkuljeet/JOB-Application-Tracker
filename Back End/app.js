@@ -3,8 +3,8 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const sequelize = require('./util/database');
 const User = require("./models/users");
-const Job = require("./models/jobs");
 const Reminder = require("./models/reminder");
+const Job = require("./models/jobs");
 const Company = require("./models/company");
 
 require('dotenv').config();
